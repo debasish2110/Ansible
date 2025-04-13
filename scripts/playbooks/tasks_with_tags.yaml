@@ -1,0 +1,19 @@
+- name: httpd server playbook
+  hosts: all
+  become: true
+  tasks:
+    - name: install httpd
+      yum:
+        name: httpd
+        state: latest
+      tags: httpd
+    - name: install git
+      yum:
+        name: git
+        state: latest
+      tags: git
+    - name: start httpd
+      service:
+        name: httpd
+        state: started
+      tags: httpd

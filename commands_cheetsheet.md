@@ -29,6 +29,10 @@ ansible-playbook playbook.yml --diff                     # Show changes
 ansible-playbook playbook.yml -e "var=value"             # Pass extra variables
 ansible-playbook playbook.yml --start-at-task="Task Name" # Start from a specific task
 ansible-playbook -l webservers playbook.yml              # Limit to specific group/host
+ansible-playbook name.yml --tags a                       # runs tasks with tag name a
+ansible-playbook name.yml --tags b,c                     # runs tasks with tag names b and c
+ansible-playbook name.yml --skip-tags "c"                # run all tasks except the tasks with tag c
+ansible-playbook name.yml --skip-tags "c,d"       # run all tasks except the tasks with tags c and d
 ```
 
 ---
