@@ -108,6 +108,6 @@ Use this when you want to include an entire playbook inside another.
 
 ## execution in ec2 machine
 
-![include modules execution](../../include_modules.png)
+![include modules execution](https://github.com/debasish2110/Ansible/blob/master/snippets/include_modules.png?raw=true)
 
 Happy Automating! 🚀
