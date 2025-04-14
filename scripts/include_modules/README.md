@@ -106,4 +106,8 @@ Use this when you want to include an entire playbook inside another.
 
 ---
 
+## execution in ec2 machine
+
+![include modules execution](../../include_modules.png)
+
 Happy Automating! 🚀
