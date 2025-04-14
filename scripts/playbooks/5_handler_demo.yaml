@@ -1,0 +1,26 @@
+- name: Install and configure Apache HTTPD
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Install httpd package
+      yum:
+        name: httpd
+        state: latest
+
+    - name: Start and enable httpd service
+      service:
+        name: httpd
+        state: started
+
+    - name: Copy index.html to /var/www/html/index.html
+      copy:
+        src: index.html
+        dest: /var/www/html/index.html
+      notify: Restart httpd
+
+  handlers:
+    - name: Restart httpd
+      service:
+        name: httpd
+        state: restarted

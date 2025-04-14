@@ -1,0 +1,11 @@
+- name: loopr playbook
+  hosts: all
+  become: true
+  tasks:
+    - name: install multiple softwares
+      yum:
+        name: "{{item}}"
+        state: latest
+      with_items:
+        - git
+        - tree
