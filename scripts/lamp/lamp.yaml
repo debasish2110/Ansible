@@ -1,0 +1,115 @@
+---
+- name: Install and configure LAMP stack (with Python) on Ubuntu
+  hosts: webservers
+  become: true
+
+  vars:
+    mysql_root_password: yourStrongPassword
+    app_dir: /var/www/flask_app
+
+  tasks:
+    - name: Update APT cache
+      apt:
+        update_cache: yes
+
+    - name: Install Apache and mod_wsgi
+      apt:
+        name:
+          - apache2
+          - libapache2-mod-wsgi-py3
+        state: present
+
+    - name: Install MySQL Server
+      debconf:
+        name: mysql-server
+        question: 'mysql-server/root_password'
+        value: "{{ mysql_root_password }}"
+        vtype: 'password'
+
+    - name: Confirm MySQL password again
+      debconf:
+        name: mysql-server
+        question: 'mysql-server/root_password_again'
+        value: "{{ mysql_root_password }}"
+        vtype: 'password'
+
+    - name: Install MySQL server package
+      apt:
+        name: mysql-server
+        state: present
+
+    - name: Install Python3 and pip
+      apt:
+        name:
+          - python3
+          - python3-pip
+        state: present
+
+    - name: Install Flask and MySQL Python client
+      pip:
+        name:
+          - flask
+          - mysql-connector-python
+
+    - name: Create Flask app directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: '0755'
+
+    - name: Deploy sample Flask app
+      copy:
+        dest: "{{ app_dir }}/app.wsgi"
+        content: |
+          from flask import Flask
+          app = Flask(__name__)
+
+          @app.route('/')
+          def hello():
+              return "Hello from Flask with Apache!"
+
+          if __name__ == "__main__":
+              app.run()
+        owner: www-data
+        group: www-data
+        mode: '0644'
+
+    - name: Configure Apache site for Flask app
+      copy:
+        dest: /etc/apache2/sites-available/flask_app.conf
+        content: |
+          <VirtualHost *:80>
+              ServerName localhost
+              WSGIDaemonProcess flask_app threads=5
+              WSGIScriptAlias / {{ app_dir }}/app.wsgi
+
+              <Directory {{ app_dir }}>
+                  Require all granted
+              </Directory>
+
+              Alias /static {{ app_dir }}/static
+              <Directory {{ app_dir }}/static/>
+                  Require all granted
+              </Directory>
+
+              ErrorLog ${APACHE_LOG_DIR}/error.log
+              CustomLog ${APACHE_LOG_DIR}/access.log combined
+          </VirtualHost>
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Enable Flask app site and modules
+      shell: |
+        a2ensite flask_app
+        a2enmod wsgi
+        systemctl reload apache2
+      args:
+        executable: /bin/bash
+
+    - name: Restart Apache
+      systemd:
+        name: apache2
+        state: restarted
